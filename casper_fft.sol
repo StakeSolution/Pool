@@ -1,6 +1,6 @@
 /*
     Port of https://github.com/ethereum/casper/blob/master/casper/contracts/simple_casper.v.py
-    From python to solidity.
+    From Vyper to Solidity.
 
     Authors
         - Aart Stuurman
