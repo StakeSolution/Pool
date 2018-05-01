@@ -173,6 +173,7 @@ contract CasperFFT
     
     /* Initializes an epoch.
        Verifies that the provided epoch has actually started and is not already initialized.
+       Calculates the interest rate & penalty factor for this epoch based on the time since finality.
        
        @epoch the epoch to be initialized */
     function initialize_epoch(int128 epoch) public;
@@ -181,23 +182,28 @@ contract CasperFFT
        TODO what are arguments */
     function deposit(address validation_addr, address withdrawal_addr) public payable;
     
-    /* Start withdrawal process.
+    /* Initiates validator logout.
+       The validator must continue to validate for dynasty_logout_delay dynasties before entering the withdrawal_delay waiting period
+       
        logout_msg can be at most 1024 bits.
        TODO what are arguments */
     function logout(bytes logout_msg) public;
     
-    /* Lets validator withdraw their current balance.
+    /* If the validator has waited for a period greater than withdrawal_delay epochs past their end_dynasty, then send them ETH equivalent to their deposit.
     
        @validator_index TODO description */
     function withdraw(int128 validator_index) public;
     
     /* Cast a vote.
-       vote_msg can be at most 1024 bits.
-    
-       TODO describe vote_msg */
+       Called once by each validator each epoch. The vote message 
+       
+       @vote_msg    Contains the fields presented in Casper Vote Format.
     function vote(bytes vote_msg) public;
     
-    /* TODO description of function and args
+    /* Can be called by anyone who detects a slashing condition violation.
+       Sends 4% of slashed validator's funds to the caller as a finder's fee and burns the remaining 96%.
+    
+       TODO description of args
        vote_msg_1 & vote_msg_2 can be at most 1024 bits. */
     function slash(bytes vote_msg_1, bytes vote_msg_2) public;
 }
