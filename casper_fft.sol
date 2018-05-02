@@ -8,6 +8,20 @@
 
 pragma solidity ^0.4.23;
 
+/*
+
+Casper Vote Format
+
+[
+  validator_index: number,  # Index of the validator sending this vote
+  target_hash: bytes32,  # Hash of the target checkpoint block for this vote
+  target_epoch: number,  # Epoch number of the target checkpoint
+  source_epoch: number,  # Epoch number of the source checkpoint
+  signature  # A signed hash of the first four elements in this list, RLP encoded. (ie. RLP([validator_index, target_hash, target_epoch, source_epoch])
+]
+
+*/
+
 // TODO descriptions
 
 contract CasperFFT
