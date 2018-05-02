@@ -211,7 +211,7 @@ contract CasperFFT
     /* Cast a vote.
        Called once by each validator each epoch. The vote message 
        
-       @vote_msg    Contains the fields presented in Casper Vote Format.
+       @vote_msg    Contains the fields presented in Casper Vote Format. */
     function vote(bytes vote_msg) public;
     
     /* Can be called by anyone who detects a slashing condition violation.
