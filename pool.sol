@@ -1,5 +1,21 @@
 /*
     First draft of staking pool contract.
+    Used for exploring the possibilities.
+    The overall process has many flaws, so do not use this in practise.
+    
+    Process:
+    - New Pool contract is deployed. Deployer becomes manager of pool.
+    - Users can join as depositors.
+    - When exactly the optimal staking size in funds has been reached,
+      the manager can call `begin_staking()`, escrowing the funds at Casper.
+    - The manager is now responsible for voting at Casper on behalf on this contract.
+      It's identity is verified through the signature validation function present in this contract.
+    - TODO finalizing staking period and returning funds
+    
+    Flaws:
+    - Trust in manager required in terms of voting. Can easily destroy funds.
+    - Getting the final funds might be hard. People want their funds in a single contract.
+      Splitting up in two contracts is annoying, so getting the last bit to reach optimal staking size might be hard.
 
     Authors
         - Aart Stuurman
@@ -46,25 +62,35 @@ contract Pool
         Can only deposit up till the pool reaches optimal staking size.
         At least some ether must be deposited(i.e. depositing 0 ether will have no effect).
         
-        - use_partial
-            false: if after deposit pool overshoots optimal staking size, the deposit is aborted.
-            true:  as much as possible of the deposit is used up till the pool reaches optimal staking size.
+        If after depositing the pool overshoots optimal staking size, the deposit is reverted.
     */
-    function deposit(bool use_partial) public payable
+    function deposit() public payable
+    {
+        require(!is_staking);
+        
+        // check if deposit fits within optimal pool size
+        require(address(this).balance <= optimal_staking_size);
+        
+        // actually handle deposit
+        exec_deposit(msg.sender, msg.value);
+    }
+    
+    /*  As `deposit()`, but as much as possible of the deposit is used up till the pool reaches optimal staking size.
+    */
+    function deposit_partial() public payable
     {
         require(!is_staking);
         
         if (address(this).balance > optimal_staking_size)
         {
-            require(use_partial);
             // calculate how much can still be deposited
-            uint256 leftover_space = optimal_staking_size - (address(this).balance - msg.value);
-            require(leftover_space > 0);
+            uint256 maximum_deposit = optimal_staking_size - (address(this).balance - msg.value);
+            require(maximum_deposit > 0);
             
             // actually handle deposit
-            exec_deposit( msg.sender, leftover_space);
+            exec_deposit( msg.sender, maximum_deposit);
             // refund remainder
-            msg.sender.transfer(msg.value - leftover_space);
+            msg.sender.transfer(msg.value - maximum_deposit);
         }
         else
         {
@@ -110,5 +136,13 @@ contract Pool
         is_staking = true;
         
         casper.deposit.value(optimal_staking_size)(address(this), address(this)); // TODO first arg validation_address
+    }
+    
+    /*  Casper signature validation fallback function.
+        TODO is this even how it works
+    */
+    function() public // TODO arguments
+    {
+        // TODO verify signature.
     }
 }
